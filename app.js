@@ -1,14 +1,12 @@
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
-import mongoose from "mongoose";
 import contactsRouter from "./routes/contactsRouter.js";
-import dotenv from "dotenv";
-dotenv.config();
-
-mongoose.set("strictQuery", true);
+import mongoose from "mongoose";
 
 const app = express();
+
+const { DB_URI } = process.env;
 
 app.use(morgan("tiny"));
 app.use(cors());
@@ -25,13 +23,17 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-mongoose
-  .connect(process.env.DB_HOST)
-  .then(() => {
-    console.log("successfully connected");
-    app.listen(4000);
-  })
-  .catch((err) => {
-    console.log(err.message);
+mongoose.set("strictQuery", true);
+
+async function run() {
+  try {
+    mongoose.connect(DB_URI);
+    console.log("Database connection successful");
+    app.listen(3000, () => {});
+  } catch (error) {
+    console.error("Database connection failure:", error);
     process.exit(1);
-  });
+  }
+}
+
+run();
